@@ -8,6 +8,8 @@ beautifulsoup4 = "*"
 flask = "*"
 boto3 = "*"
 requests = "*"
+selenium = "==4.10"
+webdriver-manager = "*"
 
 [dev-packages]
 
