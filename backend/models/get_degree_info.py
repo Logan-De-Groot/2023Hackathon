@@ -8,7 +8,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import re
-
+import boto3
+import dotenv
+import time
 service = Service()
 chrome_options = Options()
 chrome_options.add_argument("--headless") # Ensure GUI is off
@@ -18,16 +20,20 @@ driver = webdriver.Chrome(service=service, options=chrome_options)
 
 
 encounted_coures = set()
-
+new_course = []
 MAIN_URL = 'https://my.uq.edu.au/programs-courses/requirements/plan/'
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
 
-
-
+session = boto3.session.Session(region_name='ap-southeast-2', aws_secret_access_key=dotenv.get_key('.env', 'AWS_SECRET_ACCESS_KEY'), aws_access_key_id=dotenv.get_key('.env', 'AWS_ACCESS_KEY_ID'))
+dynamodb = session.resource('dynamodb')
+degree_table = dynamodb.Table('degree')
+major_table = dynamodb.Table('major')
+course_table = dynamodb.Table('courses')
 def get_core_degree_info(degree):
+    global new_course
     try:
         degree_url = MAIN_URL + degree
         driver.get(degree_url)
@@ -69,7 +75,10 @@ def get_core_degree_info(degree):
                             "href": href
                 }
                 courses.append(course_data)
-                encounted_coures.add((course_code, href))
+                if course_code not in encounted_coures:
+                    new_course.append({"course":course_code,
+                                            "href": href})
+                encounted_coures.add(course_code)
             data[section.get('id')]["courses"] = courses
 
         return data
@@ -78,6 +87,7 @@ def get_core_degree_info(degree):
         return None
 
 def get_major_degree_info(major):
+    global new_course
     try:
         major_url = MAIN_URL + major
         driver.get(major_url)
@@ -127,7 +137,10 @@ def get_major_degree_info(major):
                             "href": href
                         }
                         courses.append(course_data)
-                        encounted_coures.add((course_code, href))
+                        if course_code not in encounted_coures:
+                            new_course.append({"course":course_code,
+                                            "href": href})
+                        encounted_coures.add(course_code)
     
                 data[category_types[index]]["courses"] = courses
 
@@ -140,47 +153,85 @@ def get_major_degree_info(major):
         return None
 
 def main_loop():
-
+    global new_course
     with open('table_data.csv', 'r') as csvfile:
         reader = csv.reader(csvfile)
         lines = list(reader)
-    
+    seen_degrees = set()
     degree_major = {}
     flag = True
     count =0
     for line in lines[1:]:
-        count += 1
+        original_line = line
+        try:
+            count += 1
+            print(count)
 
-        line = line[3]
-        line = line.split(",")[-1]
+            line = line[3]
+            line = line.split(",")[-1]
 
-        major = line.split("=")[-1]
-        print(major)
-        core_degree = major[-4:]
-
-        if core_degree not in degree_major:
-            data = get_core_degree_info(core_degree)
-            if data is not None:
-                degree_major[core_degree] = core_degree
-                degree_major[core_degree] = data
-                degree_major[core_degree]["majors"] = {}
-            else:
+            major = line.split("=")[-1]
+       
+            core_degree = major[-4:]
+            print(original_line[0])
+            if core_degree in seen_degrees:
+                
                 continue
 
-            if flag != True:
-                with open("degree_major_data.csv", 'a', newline='') as csvfile:
-                    writer = csv.writer(csvfile)
-                    # Write each key-value pair as a row
-                    for key, value in degree_major.items():
-                        writer.writerow([key, value])
-        flag = False
-        if len(major) > 4:
-            data_major = get_major_degree_info(major)
-            if data_major is not None:
-                degree_major[core_degree]["majors"][major] = data_major
+            if original_line[4] == "Bachelor (Dual Degree)" or original_line[4] == "Diploma" :
+                print("skipping dual degree/diploma", core_degree)
+                continue
 
-        if count == 15:
-            break
-        
+            response = degree_table.get_item(Key={'degree': core_degree})
+            if response.get('Item') and response['Item'].get('degree_components'):
+                seen_degrees.add(core_degree)
+                print("Degree already in table ", core_degree)
+                time.sleep(0.2)
+                continue
+                
+  
+            if core_degree not in degree_major:
+                degree_info = {}
+                data = get_core_degree_info(core_degree)
+                degree_info["degree_components"] = data
+                degree_info["degree"] = core_degree
+                
+                
+                if data is None:
+                    continue
+                degree = original_line[0]
+                major = original_line[2]
+                url = original_line [3]
+                degree_type = original_line[4]
+
+               
+                print("Attempting to put degree into table ", core_degree)
+                degree_info["degree_title"] = degree
+                degree_info["url"] = url
+                degree_info["degree_type"] = degree_type
+                degree_table.put_item(Item=degree_info)
+                
+
+            # flag = False
+            if len(major) > 4:
+                data_major = get_major_degree_info(major)
+                data_major["major"] = major
+                data_major["degree"] = core_degree
+                if data_major is not None:
+                    print("Attempting to put major into table ", major)
+                    major_table.put_item(Item=data_major)
+   
+            
+            with course_table.batch_writer() as batch:
+                for course in new_course:
+                    batch.put_item(Item=course)
+            new_course = []
+ 
+
+
+        except Exception as e:
+            print(e)
+            pass
+
     
 main_loop()

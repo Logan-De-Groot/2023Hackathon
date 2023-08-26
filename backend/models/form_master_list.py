@@ -20,6 +20,8 @@ tables = soup.find_all('table')
 tables = tables[1:]
 table_data = []
 
+
+
 for table in tables:
     rows_container = table.tbody if table.tbody else table
     current_title = None
