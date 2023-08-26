@@ -43,11 +43,6 @@ with open('table_data.csv', 'r') as csv_file:
             seen_degrees.append(core_degree)
             items.append(item)
     
-
-        
-
- 
-
     with table.batch_writer() as batch:
         for item in items:
             batch.put_item(Item=item)

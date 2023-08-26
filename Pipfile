@@ -12,6 +12,7 @@ selenium = "==4.10"
 webdriver-manager = "*"
 python-dotenv = "*"
 gunicorn = "*"
+flask-cors = "*"
 
 [dev-packages]
 

@@ -1,13 +1,14 @@
 import os
 from flask import Flask, Blueprint
 from .routes import *
-
+from flask_cors import CORS
 
 api = Blueprint('api', __name__, url_prefix='/api/v1') 
 
 def create_app(config_overrides=None): 
 
     app = Flask(__name__) 
+    CORS(app)
 
     if config_overrides: 
         app.config.update(config_overrides)

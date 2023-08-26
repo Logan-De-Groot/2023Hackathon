@@ -32,5 +32,7 @@ def get_degree(degree):
             'degree': degree
         }
     )
+
+    
     item = response['Item']
     return jsonify(item), 200
