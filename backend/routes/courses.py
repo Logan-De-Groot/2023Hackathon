@@ -42,9 +42,8 @@ def form_course_mapping(major):
         for course in course_list["courses"]:
 
             course_code = course["course_code"]
-            course_code = "SPCH3212"
             course_item = get_course(course_code)
-            course_prereq[course_code] = course_item["prereqs"]
+            course_prereq[course_code] = course_item.get("prereqs", [])
             course_part_mapping[course_code] = course_part
             
 
@@ -62,7 +61,6 @@ def form_course_mapping(major):
                 "id": course,
                 "data": {"label": title if title is not None else "Not Indexed"},
                 "position": {"x": 0, "y": 0},
-                "style": COLOURS.get(course_part_mapping.get(course), "blue")
             })
         
         for prereq in prereqs:
@@ -79,7 +77,7 @@ def form_course_mapping(major):
     print("-"*20)
     print(nodes)
     
-    return [nodes, edges], 200
+    return jsonify([nodes, edges]), 200
 
 def form_prereq_list(prereq, prereq_list):
     if prereq is None:
