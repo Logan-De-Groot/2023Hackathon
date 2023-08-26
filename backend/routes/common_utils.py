@@ -16,7 +16,7 @@ def get_major(major):
     }
     )
     if response.get('Item') is None:
-        return {}
+        return None
     item = response['Item']
     return item
 
@@ -28,6 +28,6 @@ def get_course(course):
     }
     )
     if response.get('Item') is None:
-        return {}
+        return None
     item = response['Item']
     return item

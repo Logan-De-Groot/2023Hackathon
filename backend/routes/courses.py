@@ -27,6 +27,7 @@ COLOURS = {
 def form_course_mapping(major):
     degree = major[-4:]
     major_item = get_major(major)
+    print(major)
     if major == {}:
         return jsonify("Missing Major"), 404
 
@@ -40,23 +41,21 @@ def form_course_mapping(major):
 
         # form all nodes
         for course in course_list["courses"]:
-
             course_code = course["course_code"]
             course_item = get_course(course_code)
             course_prereq[course_code] = course_item.get("prereqs", [])
             course_part_mapping[course_code] = course_part
             
 
-            break
-        break
     full_set_of_courses = {}
-
+    print("FOund prereqs", course_prereq)
     for course in course_prereq.keys():
 
         form_prereq_list(course_prereq.get(course), full_set_of_courses)
 
+    print(full_set_of_courses)
     for course, (prereqs, title) in full_set_of_courses.items():
-        print(course, prereqs, title)
+        
         nodes.append({
                 "id": course,
                 "data": {"label": title if title is not None else "Not Indexed"},
@@ -84,14 +83,17 @@ def form_prereq_list(prereq, prereq_list):
         return []
     print("Prereq is:", prereq)
     for item in prereq:
+        print("Item is", item)
         new_course = get_course(item)
-        print(new_course)
+        print("FOund new course", new_course)
         if new_course is None:
             continue
 
         if new_course.get("prereqs") is None:
+            
             prereq_list[(new_course["course"])] = ([], new_course.get("title"))
         else:
+            print("added", new_course["course"])
             prereq_list[(new_course["course"])] = (new_course.get("prereqs"), new_course.get("title"))
 
         form_prereq_list(new_course.get("prereqs"), prereq_list)
