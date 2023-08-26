@@ -22,7 +22,9 @@ def get_major_route(major):
 
 @api_major.route('/degree/<degree>', methods=['GET']) 
 def get_major_from_degree_only(degree):
+    print("hit")
     mapping = get_mapping()[degree]
+    print("Returned")
     return jsonify(mapping), 200
 
 
@@ -38,7 +40,7 @@ def get_mapping():
                 mapping[row[-2]] = []
             else:
                 mapping[row[-2]].append({
-                    "balue": row[-1],
+                    "value": row[-1],
                     "label": row[3]
                 })
     return mapping
