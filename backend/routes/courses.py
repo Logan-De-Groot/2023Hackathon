@@ -27,6 +27,8 @@ COLOURS = {
 def form_course_mapping(major):
     degree = major[-4:]
     major_item = get_major(major)
+    if major == {}:
+        return jsonify("Missing Major"), 404
 
     nodes = []
     edges = []

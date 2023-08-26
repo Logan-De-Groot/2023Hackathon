@@ -15,6 +15,8 @@ def get_major(major):
         'degree':  major[-4:]
     }
     )
+    if response.get('Item') is None:
+        return {}
     item = response['Item']
     return item
 
@@ -25,5 +27,7 @@ def get_course(course):
         'course': course,
     }
     )
+    if response.get('Item') is None:
+        return {}
     item = response['Item']
     return item

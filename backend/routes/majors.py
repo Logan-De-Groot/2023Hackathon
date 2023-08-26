@@ -16,6 +16,8 @@ def health():
 @api_major.route('/<major>', methods=['GET']) 
 def get_major_route(major):
     item = get_major(major)
+    if major == {}:
+        return jsonify("Missing Major"), 404
     return jsonify(item), 200
 
 @api_major.route('/degree/<degree>', methods=['GET']) 
