@@ -25,6 +25,11 @@ COLOURS = {
 
 @api_courses.route('/mapping/<major>', methods=['GET']) 
 def form_course_mapping(major):
+    final_nodes, edges = get_data_major(major)
+    return jsonify([final_nodes, edges]), 200
+
+@lru_cache
+def get_data_major(major):
     degree = major[-4:]
     
     degree_items = get_degree(degree)
@@ -109,10 +114,7 @@ def form_course_mapping(major):
                 found = True
         if found:
             final_nodes.append(item_node)
-
-    
-    return jsonify([final_nodes, edges]), 200
-
+    return final_nodes, edges
 
 def form_prereq_list(prereq, prereq_list):
     if prereq is None:
