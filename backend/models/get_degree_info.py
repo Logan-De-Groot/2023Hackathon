@@ -105,7 +105,7 @@ def get_major_degree_info(major):
         category_types = ["A","B","C","D"]
         data = {}    
 
-        for index, part_div in enumerate(soup.find_all('div', class_='program-rules__part part selection-list')):
+        for index, part_div in enumerate(soup.find_all('div', class_='program-rules__parts')):
             if index == 4:
                 break
             

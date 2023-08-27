@@ -75,8 +75,11 @@ def form_course_mapping(major):
     print(full_set_of_courses)
 
     for course in course_prereq.keys():
+        if len(course) != 8:
+            continue
+
         if course not in full_set_of_courses:
-            full_set_of_courses[course] = ([],"")
+            full_set_of_courses[course] = ([],course)
 
     for course, (prereqs, title) in full_set_of_courses.items():
         
