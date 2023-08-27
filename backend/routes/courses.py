@@ -101,12 +101,17 @@ def form_course_mapping(major):
                 "animated": True,
             })
 
-    print(edges)
+    final_nodes = []
+    for index, item_node in enumerate(nodes):
+        found = False
+        for item_edge in edges:
+            if item_node["id"] == item_edge["target"] or item_node["id"] == item_edge["source"]:
+                found = True
+        if found:
+            final_nodes.append(item_node)
 
-    print("-"*20)
-    print(nodes)
     
-    return jsonify([nodes, edges]), 200
+    return jsonify([final_nodes, edges]), 200
 
 
 def form_prereq_list(prereq, prereq_list):
