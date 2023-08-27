@@ -46,6 +46,9 @@ def get_data_major(major):
 
     if degree_items is not None:
         for course_part, course_list in degree_items["degree_components"].items():
+            if "courses" not in course_list:
+                continue
+
             #print(course_part,course_list)
             if course_part == "degree_title" or course_part == "degree":
                 continue
@@ -88,12 +91,12 @@ def get_data_major(major):
             full_set_of_courses[course] = ([],course)
 
     for course, (prereqs, title) in full_set_of_courses.items():
-        
-        nodes.append({
-                "id": course,
-                "data": {"label": title if title is not None else "Not Indexed"},
-                "position": {"x": 0, "y": 0},
-            })
+        if (title is not None):
+            nodes.append({
+                    "id": course,
+                    "data": {"label": title if title is not None else "Not Indexed"},
+                    "position": {"x": 0, "y": 0},
+                })
         if prereqs == []:
             continue
 
