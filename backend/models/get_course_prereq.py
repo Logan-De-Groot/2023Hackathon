@@ -2,21 +2,21 @@ import csv
 import requests
 from bs4 import BeautifulSoup
 import os
-from selenium import webdriver
+# from selenium import webdriver
 import json
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.chrome.options import Options
 import re
 import boto3
 import time
 import dotenv
-service = Service()
-chrome_options = Options()
-chrome_options.add_argument("--headless") # Ensure GUI is off
-chrome_options.add_argument("--no-sandbox")
+# service = Service()
+# chrome_options = Options()
+# chrome_options.add_argument("--headless") # Ensure GUI is off
+# chrome_options.add_argument("--no-sandbox")
 
-driver = webdriver.Chrome(service=service, options=chrome_options)
+# driver = webdriver.Chrome(service=service, options=chrome_options)
 MAIN_URL = 'https://my.uq.edu.au'
 
 headers = {
@@ -73,11 +73,14 @@ def get_course_prereq(course):
     time.sleep(1)
     return matches, course_title
 
-response_items = course_table.scan()['Items']
+# response_items = course_table.scan()['Items']
 
-for index, item in enumerate(response_items):
-    course = item['course']
-    course_url = item['href']
+# for index, item in enumerate(response_items):
+for index, item in enumerate(['CSSE1001', 'CSSE2002', 'COMP2048', 'COMP3506', 'CSSE2010', 'INFS1200', 'MATH1061', 'STAT1201', 'STAT1301', 'DECO3801', 'COMP2140', 'COSC2500', 'CSSE2310', 'DATA2001', 'DECO1400', 'DECO2500', 'MATH1051', 'MATH1071', 'COMP3301', 'COMP3320', 'COMP3400', 'COMP3702', 'COMP3710', 'COMP3820', 'COMP4403', 'COMP4702', 'COMS3200', 'COSC3000', 'COSC3500', 'COSC3012', 'CSSE3100', 'CSSE3200', 'CYBR3000', 'DECO3500', 'INFS3200', 'INFS3202', 'INFS3208', 'INFS4203', 'INFS4205', 'MATH3201', 'MATH3202', 'MATH3302', 'SCIE2100', 'COMP3702', 'MATH2302', 'STAT3006', 'DECO2500', 'COMP3400', 'COMP4403', 'CSSE3100']):
+    # course = item['course']
+    course = item
+    # course_url = item['href']
+    course_url = ''
     if len(course) != 8:
         continue
     print(course)
