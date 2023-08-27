@@ -106,7 +106,8 @@ def form_course_mapping(major):
     print("-"*20)
     print(nodes)
     
-    return jsonify([nodes.reverse(), edges.reverse()]), 200
+    return jsonify([nodes, edges]), 200
+
 
 def form_prereq_list(prereq, prereq_list):
     if prereq is None:

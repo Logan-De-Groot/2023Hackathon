@@ -70,13 +70,20 @@ def get_course_prereq(course):
         if len(match) == 4:
             matches[index] = course_prefix + match
     print(matches)
-    time.sleep(1)
+    time.sleep(0.3)
     return matches, course_title
 
 # response_items = course_table.scan()['Items']
 
 # for index, item in enumerate(response_items):
-for index, item in enumerate(['CSSE1001', 'CSSE2002', 'COMP2048', 'COMP3506', 'CSSE2010', 'INFS1200', 'MATH1061', 'STAT1201', 'STAT1301', 'DECO3801', 'COMP2140', 'COSC2500', 'CSSE2310', 'DATA2001', 'DECO1400', 'DECO2500', 'MATH1051', 'MATH1071', 'COMP3301', 'COMP3320', 'COMP3400', 'COMP3702', 'COMP3710', 'COMP3820', 'COMP4403', 'COMP4702', 'COMS3200', 'COSC3000', 'COSC3500', 'COSC3012', 'CSSE3100', 'CSSE3200', 'CYBR3000', 'DECO3500', 'INFS3200', 'INFS3202', 'INFS3208', 'INFS4203', 'INFS4205', 'MATH3201', 'MATH3202', 'MATH3302', 'SCIE2100', 'COMP3702', 'MATH2302', 'STAT3006', 'DECO2500', 'COMP3400', 'COMP4403', 'CSSE3100']):
+main_list = []
+with open("all courses.csv", "r") as file:
+    
+    for item in csv.reader(file):
+        main_list.append(item[0])
+
+
+for index, item in enumerate(main_list):
     # course = item['course']
     course = item
     # course_url = item['href']
