@@ -161,6 +161,16 @@ def main_loop():
     degree_major = {}
     flag = True
     count =0
+
+    lines = [
+        ["Computer Science","","Cyber Security","/programs-courses/plan.html?acad_plan=CYBERC2451","Bachelor"],
+        ["Computer Science","","Data Science","/programs-courses/plan.html?acad_plan=DATASC2451","Bachelor"],
+        ["Computer Science","","Data Science","/programs-courses/plan.html?acad_plan=DATASD2451","Bachelor"],
+        ["Computer Science","","Machine Learning","/programs-courses/plan.html?acad_plan=MACHDC2451","Bachelor"],
+        ["Computer Science","","Programming Languages","/programs-courses/plan.html?acad_plan=PROLAC2451","Bachelor"],
+        ["Computer Science","","Scientific Computing","/programs-courses/plan.html?acad_plan=SCCOMC2451","Bachelor"],
+        ["Computer Science (Honours)","","Computer Science (Honours)","/programs-courses/program.html?acad_prog=2452","Bachelor Honours"]
+    ]
     for line in lines[1:]:
         original_line = line
         try:
@@ -174,20 +184,6 @@ def main_loop():
        
             core_degree = major[-4:]
             print(original_line[0])
-            if core_degree in seen_degrees:
-                
-                continue
-
-            if original_line[4] == "Bachelor (Dual Degree)" or original_line[4] == "Diploma" :
-                print("skipping dual degree/diploma", core_degree)
-                continue
-
-            response = degree_table.get_item(Key={'degree': core_degree})
-            if response.get('Item') and response['Item'].get('degree_components'):
-                seen_degrees.add(core_degree)
-                print("Degree already in table ", core_degree)
-                time.sleep(0.2)
-                continue
                 
   
             if core_degree not in degree_major:
@@ -217,6 +213,7 @@ def main_loop():
                 data_major = get_major_degree_info(major)
                 data_major["major"] = major
                 data_major["degree"] = core_degree
+                print(json.dumps(data_major,indent=4))
                 if data_major is not None:
                     print("Attempting to put major into table ", major)
                     major_table.put_item(Item=data_major)

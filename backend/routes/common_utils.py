@@ -31,3 +31,15 @@ def get_course(course):
         return None
     item = response['Item']
     return item
+
+@lru_cache
+def get_degree(degree):
+    response = degree_table.get_item(
+            Key={
+                'degree': degree
+            }
+        )
+
+    if response.get('Item') is None:
+        return None
+    return response['Item']
