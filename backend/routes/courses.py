@@ -69,7 +69,8 @@ def form_course_mapping(major):
     full_set_of_courses = {}
     print("FOund prereqs", course_prereq)
     for course in course_prereq.keys():
-
+        if len(course) != 8:
+            continue
         form_prereq_list(course_prereq.get(course), full_set_of_courses)
 
     print(full_set_of_courses)

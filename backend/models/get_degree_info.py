@@ -22,7 +22,7 @@ driver = webdriver.Chrome(service=service, options=chrome_options)
 encounted_coures = set()
 new_course = []
 MAIN_URL = 'https://my.uq.edu.au/programs-courses/requirements/plan/'
-
+MAJOR_URL = ''
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
@@ -44,42 +44,37 @@ def get_core_degree_info(degree):
         category_types = ["A","B","C","D"]
         data = {}    
 
-
-        for index, section in enumerate(soup.find_all('div', class_='program-rules__part')):
+        for index, part_div in enumerate(soup.find_all('div', class_='program-rules__parts')):
+            if index == 4:
+                break
             
-            # Extract the h4 content within the current section
-            
-            # Extract the part__rule part__rule--selection content within the current section
-            rule_content = section.find('p', class_='part__rule part__rule--selection')
-
-            data[section.get('id')] = {
-                "rule": rule_content.text if rule_content else None,
-            }
-            courses = []
-            # Loop through each reference link within the current section
-            for ref_link in section.find_all('a', class_='selection-list__row curriculum-reference'):
-                try:
-                    course_code = ref_link.find('span', class_='curriculum-reference__code').text
-                    units = ref_link.find('span', class_='curriculum-reference__units').text
-                    href = ref_link['href']
-                except Exception:
-                    course_code = "Elective"
-                    units = "N/A"
-                    href = "N/A"
+            part_content = part_div.find('div', class_='part__content')
 
 
+            # data[section.get('id')] = {
+            #     "rule": rule_content.text if rule_content else None,
+            # }
+            if part_content:
+                courses = []
+                for a_tag in part_content.find_all('a', class_='curriculum-reference'):
+                    href = a_tag['href']
+                    course_code = a_tag.find('span', class_='curriculum-reference__code').text
+                    units = a_tag.find('span', class_='curriculum-reference__units').text
+                    title = a_tag.find('h5', class_='curriculum-reference__name').text
+                    course_data = {
+                        "course_code": course_code,
+                        "units": units,
+                        "title": title,
+                        "href": href
+                    }
+                    print(course_code)
+                    courses.append(course_data)
+                    # if course_code not in encountered_courses:
+                    #     new_course.append({"course": course_code, "href": href})
+                    # encountered_courses.add(course_code)
 
-                course_data = {
-                            "course_code": course_code,
-                            "units": units,
-                            "href": href
-                }
-                courses.append(course_data)
-                if course_code not in encounted_coures:
-                    new_course.append({"course":course_code,
-                                            "href": href})
-                encounted_coures.add(course_code)
-            data[section.get('id')]["courses"] = courses
+                data[category_types[index]]["courses"] = courses
+
 
         return data
     except Exception as e:
@@ -88,69 +83,59 @@ def get_core_degree_info(degree):
 
 def get_major_degree_info(major):
     global new_course
-    try:
-        major_url = MAIN_URL + major
-        driver.get(major_url)
-        driver.implicitly_wait(5)
-        
 
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-
-        script_content = None
-        for script in soup.find_all("script", type="text/javascript"):
-            if "window.AppData" in script.string:
-                script_content = script.string
-                break
-
-        category_types = ["A","B","C","D"]
-        data = {}    
-
-        for index, part_div in enumerate(soup.find_all('div', class_='program-rules__parts')):
-            if index == 4:
-                break
-            
-            h3_primary_content = part_div.find('h3', class_='part__title')
-
-            rule_content = part_div.find('p', class_='part__rule part__rule--selection')
-
-
-            part_content = part_div.find('div', class_='part__content')
-
-            data[category_types[index]] = {
-                        "primary_title": h3_primary_content.text,
-                        "rule": rule_content.text,
-                    }
-            
-            # If part_content exists, iterate over its children
-            if part_content:
-                courses = []
-                for child in part_content.children:
-                    if child.name == 'h3':  # For secondary h3
-                        print(f"Secondary Title: {child.text}\n")
-                    elif child.name == 'a' and child.has_attr('class') and 'curriculum-reference' in child['class']:
-                        href = child['href']
-                        course_code = child.find('span', class_='curriculum-reference__code').text
-                        units = child.find('span', class_='curriculum-reference__units').text
-                        course_data = {
-                            "course_code": course_code,
-                            "units": units,
-                            "href": href
-                        }
-                        courses.append(course_data)
-                        if course_code not in encounted_coures:
-                            new_course.append({"course":course_code,
-                                            "href": href})
-                        encounted_coures.add(course_code)
+    major_url = "https://my.uq.edu.au/programs-courses/requirements/plan/" + major
+    print(major_url)
+    driver.get(major_url)
+    driver.implicitly_wait(5)
     
-                data[category_types[index]]["courses"] = courses
 
-        # Now you can access the data like a regular dictionary
-        program_requirements = 0
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    # print(soup)
+    script_content = None
+    for script in soup.find_all("script", type="text/javascript"):
+        if "window.AppData" in script.string:
+            script_content = script.string
+            break
 
-        return data
-    except Exception as e:
-        print(e)
-        return None
+    category_types = ["A","B","C","D"]
+    data = {}    
+    # category_types = ["Introductory Elective Courses", "Compulsory Courses"]
+    
+    for index, part_div in enumerate(soup.find_all('div', class_='program-rules__parts')):
+        if index == 4:
+            break
+        data[category_types[index]] = {}
+
+        
+        part_content = part_div.find('div', class_='part__content')
+
+        if part_content:
+            courses = []
+            for a_tag in part_content.find_all('a', class_='curriculum-reference'):
+                href = a_tag['href']
+                course_code = a_tag.find('span', class_='curriculum-reference__code').text
+                units = a_tag.find('span', class_='curriculum-reference__units').text
+                title = a_tag.find('h5', class_='curriculum-reference__name').text
+                course_data = {
+                    "course_code": course_code,
+                    "units": units,
+                    "title": title,
+                    "href": href
+                }
+                print(course_code)
+                courses.append(course_data)
+                # if course_code not in encountered_courses:
+                #     new_course.append({"course": course_code, "href": href})
+                # encountered_courses.add(course_code)
+            print("ADDING", courses)
+            data[category_types[index]]["courses"] = courses
+
+    # Now you can access the data like a regular dictionary
+    program_requirements = 0
+
+    return data
+
 
 def main_loop():
     global new_course
@@ -173,62 +158,70 @@ def main_loop():
     ]
     for line in lines[1:]:
         original_line = line
-        try:
-            count += 1
-            print(count)
+        # try:
+        count += 1
+        print(count)
 
-            line = line[3]
-            line = line.split(",")[-1]
+        line = line[3]
+        line = line.split(",")[-1]
 
-            major = line.split("=")[-1]
-       
-            core_degree = major[-4:]
-            print(original_line[0])
-                
-  
-            if core_degree not in degree_major:
-                degree_info = {}
-                data = get_core_degree_info(core_degree)
-                degree_info["degree_components"] = data
-                degree_info["degree"] = core_degree
-                
-                
-                if data is None:
-                    continue
-                degree = original_line[0]
-                major = original_line[2]
-                url = original_line [3]
-                degree_type = original_line[4]
-
-               
-                print("Attempting to put degree into table ", core_degree)
-                degree_info["degree_title"] = degree
-                degree_info["url"] = url
-                degree_info["degree_type"] = degree_type
-                degree_table.put_item(Item=degree_info)
-                
-
-            # flag = False
-            if len(major) > 4:
-                data_major = get_major_degree_info(major)
-                data_major["major"] = major
-                data_major["degree"] = core_degree
-                print(json.dumps(data_major,indent=4))
-                if data_major is not None:
-                    print("Attempting to put major into table ", major)
-                    major_table.put_item(Item=data_major)
-   
+        major = line.split("=")[-1]
+    
+        core_degree = major[-4:]
+        print(original_line[0])
             
-            with course_table.batch_writer() as batch:
-                for course in new_course:
-                    batch.put_item(Item=course)
-            new_course = []
+
+        # if core_degree not in degree_major:
+        #     degree_info = {}
+        #     data = get_core_degree_info(core_degree)
+        #     degree_info["degree_components"] = data
+        #     degree_info["degree"] = core_degree
+            
+            
+        #     if data is None:
+        #         continue
+        #     degree = original_line[0]
+        #     major = original_line[2]
+        #     url = original_line [3]
+        #     degree_type = original_line[4]
+
+            
+        #     print("Attempting to put degree into table ", core_degree)
+        #     degree_info["degree_title"] = degree
+        #     degree_info["url"] = url
+        #     degree_info["degree_type"] = degree_type
+        #     degree_table.put_item(Item=degree_info)
+            
+
+        # flag = False
+        major = original_line[3]
+        if len(major) > 4:
+            print(major)
+            print(major.split("=")[-1])
+            data_major = get_major_degree_info(major.split("=")[-1])
+            print(json.dumps(data_major,indent=4))
+            print(major)
+
+            data_major["major"] = major
+            data_major["degree"] = core_degree
+            print(data_major)
+            print(json.dumps(data_major,indent=4))
+            
+            # if data_major is not None:
+            #     print("Attempting to put major into table ", major)
+            #     major_table.put_item(Item=data_major)
+
+        
+        with course_table.batch_writer() as batch:
+            for course in new_course:
+                batch.put_item(Item=course)
+        new_course = []
  
 
 
-        except Exception as e:
-            print(e)
-            pass
+        # except Exception as e:
+        #     print(e)
+        #     pass
 
     
 main_loop()
