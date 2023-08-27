@@ -95,8 +95,8 @@ def form_course_mapping(major):
         for prereq in prereqs:
             edges.append({
                 "id": f"{course}{prereq}",
-                "source": course,
-                "target": prereq,
+                "target": course,
+                "source": prereq,
                 "type": "smoothstep",
                 "animated": True,
             })
