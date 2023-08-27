@@ -122,6 +122,7 @@ def form_prereq_list(prereq, prereq_list):
                 "prereqs": "unknown",
                 "title": "unknown"
             }
+            return 
 
         if new_course.get("prereqs") is None:
             
